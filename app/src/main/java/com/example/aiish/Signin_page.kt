@@ -16,6 +16,7 @@ import android.view.WindowManager
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.RequestQueue
@@ -126,12 +127,17 @@ class Signin_page : AppCompatActivity() {
 
         val Google_signincard=findViewById<androidx.cardview.widget.CardView>(com.example.aiish.R.id.Google_signincard)
         val Google_signincard_layoutParams: ViewGroup.LayoutParams = Google_signincard.layoutParams
-        Google_signincard_layoutParams.height =(screenHeight/16.0).toInt()
+        Google_signincard_layoutParams.height =(screenWidth/6).toInt()
         Google_signincard_layoutParams.width=(screenWidth/1.28823).toInt()
+
+        val signupTitle=findViewById<TextView>(com.example.aiish.R.id.signupTitle)
+        signupTitle.setTextSize((screenHeight/76.333333).toFloat());
+        val rememberCheckBoxl=findViewById<CheckBox>(com.example.aiish.R.id.rememberCheckBox)
+        rememberCheckBoxl.setTextSize((screenWidth/77.14285714).toFloat());
 
         val lts_logo=findViewById<ImageView>(com.example.aiish.R.id.lts_logo)
         val layoutParams: ViewGroup.LayoutParams = lts_logo.layoutParams
-        layoutParams.height = (screenHeight/3.81666).toInt()
+        layoutParams.height = (screenWidth/1.8).toInt()
         layoutParams.width=(screenWidth/1.6615).toInt()
 
         val dvt_logo_lts_logo=findViewById<ImageView>(com.example.aiish.R.id.dvt_logo)

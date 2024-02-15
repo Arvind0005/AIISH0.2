@@ -18,6 +18,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.LocaleList
@@ -47,6 +48,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.Nullable
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -117,7 +119,7 @@ class MainActivity : ComponentActivity() {
     private var remainingWordCount = 10
     private var Transcribetext = "";
     private var currentWordCount = 0
-    private var isTablet = false;
+    private var isTablet = true;
     private var deviceId = "";
     private val SMS_PERMISSION_REQUEST_CODE = 123
     private var userEmail = "";
@@ -376,6 +378,7 @@ class MainActivity : ComponentActivity() {
     ) {
         val url = "https://trrain4-web.letstalksign.org/get_translation"
         println("yessssssssssssssssssssssssssssjbhvbdhbvhjbjdbhfg")
+        println(params.toString());
         fileHandler.createAndWriteToFile("INFO "+
             "sendGPTTranslationRequest " + params.toString(),
             fileName
@@ -554,13 +557,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onResume() {
         super.onResume()
+        registerReceiver(sessionMsg, IntentFilter("session_message"),RECEIVER_EXPORTED)
         handlerfile.postDelayed(runnable, 60000) // Start the runnable immediately
     }
 
     override fun onPause() {
         super.onPause()
+        unregisterReceiver(sessionMsg);
         handlerfile.removeCallbacks(runnable) // Stop the runnable when the activity is paused
     }
 //    override fun onSaveInstanceState(outState: Bundle) {
@@ -571,6 +577,7 @@ class MainActivity : ComponentActivity() {
 //        outState.putString("userEmail", userEmail)
 //    }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -607,20 +614,46 @@ class MainActivity : ComponentActivity() {
             deviceId = secureTokenManager.loadId().toString();
             userEmail = secureTokenManager.loadEmail().toString()
         }
+
         fileHandler.createAndWriteToFile("INFO "+"content1 ", fileName);
 //        Handler().postDelayed({
         fileHandler.createAndWriteToFile("INFO "+"content2 ", fileName);
 
-        registerReceiver(sessionMsg, IntentFilter("session_message"))
-//        if (config.smallestScreenWidthDp >= 600) {
-//            isTablet=true;
-//            setContentView(com.example.aiish.R.layout.mainactivity_tablet)
-////            setContentView(R.layout.main_activity_tablet)
-//        } else {
-//            isTablet=false;
-        setContentView(R.layout.mainactivity)
-//            setContentView(R.layout.main_activity)
-        //     }
+        registerReceiver(sessionMsg, IntentFilter("session_message"),RECEIVER_EXPORTED)
+      //
+        if (config.smallestScreenWidthDp >= 600) {
+            isTablet=true;
+            setContentView(com.example.aiish.R.layout.mainactivity_tablet)
+        }
+        else {
+            isTablet=false;
+            setContentView(R.layout.mainactivity)
+        }
+        if (isTablet) {
+            val text_button: ImageView = findViewById(R.id.webview_text_ic)
+            val text_title: TextView = findViewById(R.id.texttitle)
+            val scan_button: ImageView = findViewById(R.id.webview_scan_ic)
+            val scan_title: TextView = findViewById(R.id.scanTitle)
+            fun dpToPx(dp: Int): Int {
+                val density = resources.displayMetrics.density
+                return (dp * density).toInt()
+            }
+
+            val mic_button: ImageView = findViewById(R.id.webview_mic_ic)
+            val mic_title: TextView = findViewById(R.id.speakTitle)
+
+            fileHandler.createAndWriteToFile("MainActivity " + "isTablet", fileName);
+            text_title.setTextSize(25F)
+            text_button.layoutParams.height = dpToPx(55);
+            text_button.layoutParams.width = dpToPx(55);
+            mic_button.layoutParams.height = dpToPx(55) // Increase height by 10dp
+            mic_button.layoutParams.width = dpToPx(55)
+            mic_title.setTextSize(25F)
+            scan_title.setTextSize(25F)
+            scan_button.layoutParams.height = dpToPx(55)
+            scan_button.layoutParams.width = dpToPx(55);
+
+        }
         val scale = resources.displayMetrics.density
         var tv_Speech_to_text = findViewById<TextView>(R.id.webview_text);
         val languageSpinner: Spinner = findViewById(R.id.languageSpinner)
@@ -628,7 +661,7 @@ class MainActivity : ComponentActivity() {
         val languages = arrayOf(
             "English",
             "Kannada",
-            "Hindi"
+             "Hindi",
         )
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("1056955407882-m2fv7ko571ndsu9bsh2irnbnb6354gb1.apps.googleusercontent.com")
@@ -728,7 +761,7 @@ class MainActivity : ComponentActivity() {
         webSettings.javaScriptEnabled = true
 
         // Load the URL
-        val userurl = "https://letstalksign.org/extension/aiish.html"
+        val userurl = "https://letstalksign.org/extension/aiish1.html"
 //        webView.webViewClient = MyWebViewClient()
 
         webView.settings.javaScriptEnabled = true
@@ -762,9 +795,9 @@ class MainActivity : ComponentActivity() {
         }
 
         webView.addJavascriptInterface(WebAppInterface(this), "AndroidInterface")
-        if (isTablet) {
-            webView.setInitialScale(310);
-        }
+//        if (isTablet) {
+//            webView.setInitialScale(310);
+//        }
         val webviewTitle: TextView = findViewById(R.id.title_webview_text);
         val iv_mic: ImageView = findViewById<ImageView>(R.id.webview_mic_ic)
         val text_button: ImageView = findViewById(R.id.webview_text_ic);
@@ -1038,17 +1071,36 @@ class MainActivity : ComponentActivity() {
                     deviceId = secureTokenManager.loadId().toString();
                     userEmail = secureTokenManager.loadEmail().toString()
 
+
+                    var params: Map<String, String> = mapOf();
+                    if(selectedLanguage=="Hindi")
+                    {
+                        params = mapOf(
+                            "token" to token.toString(),
+                            "maxWordCount" to "50",
+                            "fromLang" to "Hindi",
+                            "toLang" to "english",
+                            "textToTranslate" to " " + Objects.requireNonNull(result)?.get(0),
+                            "customer_id" to "10016",
+                            "device_id" to deviceId,
+                            "gmail_id" to userEmail
+                        )
+                    }
+                    else if(selectedLanguage=="Kannada")
+                    {
+                        params = mapOf(
+                            "token" to token.toString(),
+                            "maxWordCount" to "50",
+                            "fromLang" to "Kannada",
+                            "toLang" to "english",
+                            "textToTranslate" to " " + Objects.requireNonNull(result)?.get(0),
+                            "customer_id" to "10016",
+                            "device_id" to deviceId,
+                            "gmail_id" to userEmail
+                        )
+                    }
+
                     // Make the translation request
-                    val params = mapOf(
-                        "token" to token.toString(),
-                        "maxWordCount" to "50",
-                        "fromLang" to "Hindi",
-                        "toLang" to "english",
-                        "textToTranslate" to " " + Objects.requireNonNull(result)?.get(0),
-                        "customer_id" to "10016",
-                        "device_id" to deviceId,
-                        "gmail_id" to userEmail
-                    )
                     fileHandler.createAndWriteToFile(
                         "onActivityResult() selectedLanguage!=\"English\\ " + params.toString(),
                         fileName
@@ -1219,6 +1271,9 @@ class MainActivity : ComponentActivity() {
         val codePoint = char.toInt()
         return (codePoint in 97..122) || (codePoint in 65..90)
     }
+    fun isSpecialCharacter(char: Char): Boolean {
+        return char in setOf(',', '.', '?', '!', ';', ':', '-', '_', '/', '\\', '(', ')', '[', ']', '{', '}', '<', '>', '|', '*', '&', '^', '%', '$', '#', '@', '~', '`', '"', '\'', '+', '=', ' ', '\t', '\n', '\r') || char in '0'..'9'
+    }
 
     @SuppressLint("MissingInflatedId", "SetTextI18n")
     private fun showPopupWithEditText(initialText: CharSequence, Title: String) {
@@ -1295,7 +1350,7 @@ class MainActivity : ComponentActivity() {
                     if (words?.isNotEmpty() == true) {
                         for (word in words) {
                             for (char in word) {
-                                if (isAscii(char)) {
+                                if (!isSpecialCharacter(char) && isAscii(char)) {
                                     englishNote.setText("Note: Kannada language is chosen. Please type Kannada sentences.")
                                     englishNote.visibility = View.VISIBLE;
                                     interpretButton.isEnabled = false
@@ -1308,7 +1363,7 @@ class MainActivity : ComponentActivity() {
                     if (words?.isNotEmpty() == true) {
                         for (word in words) {
                             for (char in word) {
-                                if (isAscii(char)) {
+                                if (!isSpecialCharacter(char) && isAscii(char)) {
                                     englishNote.setText("Note: Hindi language is chosen. Please type Gindi sentences.")
                                     englishNote.visibility = View.VISIBLE;
                                     interpretButton.isEnabled = false
@@ -1321,7 +1376,7 @@ class MainActivity : ComponentActivity() {
                     if (words?.isNotEmpty() == true) {
                         for (word in words) {
                             for (char in word) {
-                                if (!isAscii(char)) {
+                                if (!isSpecialCharacter(char) && !isAscii(char)) {
                                     englishNote.setText("Note:English language is chosen. Please type English sentences.")
                                     englishNote.visibility = View.VISIBLE;
                                     interpretButton.isEnabled = false
@@ -1531,7 +1586,8 @@ class MainActivity : ComponentActivity() {
                         webView.evaluateJavascript(jsCode, null)
                     }
                 }
-            } else {
+            }
+            else {
                 Bugfender.d("EditText", editText.text.toString());
 
                 fileHandler.createAndWriteToFile("INFO "+"EditText " + editText.text.toString(), fileName);

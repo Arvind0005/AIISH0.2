@@ -90,22 +90,36 @@
 
 
                 </androidx.cardview.widget.CardView>
-                <CheckBox
+                <LinearLayout
                     android:layout_below="@+id/Google_signincard"
-                    android:layout_marginHorizontal="10dp"
-                    android:layout_marginTop="20dp"
-                    android:fontFamily="@font/rimouskisb_regular"
                     android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                <View
+                    android:layout_weight="1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp">
+                </View>
+                <CheckBox
+                    android:layout_marginHorizontal="10dp"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/rimouskisb_regular"
                     android:textColor="@color/white"
                     android:id="@+id/rememberCheckBox"
                     android:layout_centerHorizontal="true"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginEnd="20dp"
+                    android:textSize="14dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Remember this account next time and login automatically!"
                     android:checked="true"
                     />
+                <View
+                    android:layout_weight="1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp">
+                </View>
+                </LinearLayout>
 
 
 

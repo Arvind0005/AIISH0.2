@@ -12,6 +12,7 @@ color teal_700
 color textColor
 color white
 drawable accessibility_disable
+drawable border
 drawable button_disabled_color
 drawable dvt_logo
 drawable ic_apps
